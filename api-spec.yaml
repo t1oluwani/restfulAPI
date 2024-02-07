@@ -1,0 +1,135 @@
+openapi: 3.0.0
+info:
+  title: Employee API
+  description: RESTAPI for managing employee data
+  version: 1.0.0
+servers:
+  - url: http://localhost:7000
+paths:
+
+  /employees:
+    get:
+      summary: Retrieve all employees
+      responses:
+        '200':
+          description: A list of employees
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Employee'
+
+    post:
+      summary: Add a new employee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Employee'
+      responses:
+        '200':
+          description: Employee added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+
+  /employees/{id}:
+    get:
+      summary: Retrieve an employee by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the employee to retrieve
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Employee found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '404':
+          description: Employee not found
+    put:
+      summary: Update an existing employee
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the employee to update
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Employee'
+      responses:
+        '200':
+          description: Employee updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '404':
+          description: Employee not found
+    patch:
+      summary: Modify an existing employee
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the employee to modify
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Employee'
+      responses:
+        '200':
+          description: Employee modified successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '404':
+          description: Employee not found
+    delete:
+      summary: Delete an existing employee
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the employee to delete
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Employee deleted successfully
+        '404':
+          description: Employee not found
+components:
+  schemas:
+    Employee:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        years_with_company:
+          type: number
+        department:
+          type: string
+        salary:
+          type: number
+    

@@ -1,6 +1,15 @@
 const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs'); // This is to load OpenAPI YAML file
+
 const app = express();
 const PORT = 7000;
+
+// Load OpenAPI specification
+const swaggerDocument = YAML.load('./api-spec.yaml');
+
+// Serve Swagger UI documentation
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Middleware
 app.use(express.json()); // Parse JSON request bodies
@@ -98,7 +107,7 @@ app.post('/employees', (req, res) => {
 
     // Check if all required fields are provided (ID can be 0))
     if (!((id == 0 || id) && name && years_with_company && department && salary)) {
-        res.status(401).send({
+        res.status(404).send({
             "message": "Invalid request: missing a required field. Please provide all required fields."
         });
     }
@@ -116,7 +125,7 @@ app.post('/employees', (req, res) => {
     employeesList.push(newEmployee);
 
     // Confirm the employee was added
-    res.send({
+    res.status(200).send({
         "status" : 200,
         "message": "New employee added",
         id: newEmployee.id,
@@ -154,7 +163,7 @@ app.put('/employees/:id', (req, res) => {
  
     // Check if all required fields are provided
     if (!(new_id && new_name && new_years_with_company && new_department && new_salary)) {
-        res.status(401).send({
+        res.status(404).send({
             "message": "Invalid request: missing a required field. Please provide all required fields."
         });
     }
@@ -167,7 +176,7 @@ app.put('/employees/:id', (req, res) => {
     employee.salary = new_salary;
 
     // Confirm the employee was updated
-    res.send({
+    res.status(200).send({
         "status" : 200,
         "message": "Employee updated",
     })
@@ -218,7 +227,7 @@ app.patch('/employees/:id', (req, res) => {
  
     // Check if at least one field is provided
     if (!(mod_id || mod_name || mod_years_with_company || mod_department || mod_salary)) {
-        res.status(401).send({
+        res.status(404).send({
             "message": "Invalid request: missing a required field. Please provide at least one field."
         });
     }
@@ -231,7 +240,7 @@ app.patch('/employees/:id', (req, res) => {
     employee.salary = mod_salary;
 
     // Confirm the employee was modified
-    res.send({
+    res.status(200).send({
         "status" : 200,
         "message": "Employee modified",
     })
@@ -262,7 +271,7 @@ app.delete('/employees/:id', (req, res) => {
     employeesList.splice(employeesList.indexOf(employee), 1);
 
     // Confirm the employee was deleted
-    res.send({
+    res.status(200).send({
         "status" : 200,
         "message": "Employee deleted",
     })
