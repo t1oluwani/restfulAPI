@@ -129,7 +129,7 @@ app.post('/employees', async (req, res) => {
 
         // Check if all required fields are provided (ID can be 0)
         if (!(name && job_title && years_with_company && department && salary)) {
-            return res.status(400).send({
+            return res.status(404).send({
                 "message": "Invalid request: missing a required field. Please provide all required fields."
             });
         } else {
@@ -176,7 +176,7 @@ app.put('/employees/:id', async (req, res) => {
 
         // Check if all required fields are provided (ID can be 0)
         if (!(name && job_title && years_with_company && department && salary)) {
-            return res.status(400).send({
+            return res.status(404).send({
                 "message": "Invalid request: missing a required field. Please provide all required fields."
             });
         } else {
@@ -226,7 +226,7 @@ app.patch('/employees/:id', async (req, res) => {
 
         // Check if any required fields is provided
         if (!(new_name || new_job_title || new_years_with_company || new_department || new_salary)) {
-            return res.status(400).send({
+            return res.status(404).send({
                 "message": `Invalid request: missing any required field. Please provide at least one field.
                             ${new_name} ${new_job_title} ${new_years_with_company} ${new_department} ${new_salary}`
             });
