@@ -1,280 +1,277 @@
+const e = require('express');
 const express = require('express');
+const mongoose = require('mongoose');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs'); // This is to load OpenAPI YAML file
 
 const app = express();
 const PORT = 7000;
 
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost:27017/employee_database')
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('Error connecting to MongoDB:', err));
+
 // Load OpenAPI specification
 const swaggerDocument = YAML.load('./api-spec.yaml');
-
+    
 // Serve Swagger UI documentation
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Middleware
 app.use(express.json()); // Parse JSON request bodies
 
-// List of Employees (with sample data)
-var employeesList = [
-    {
-        "id": 1,
-        "name": "Bob Doe",
-        "years_with_company": 9.5,
-        "department": "HR",
-        "salary": 100000
-    },
-    {
-        "id": 2,
-        "name": "Leeroy Jenkins",
-        "years_with_company": 9.5,
-        "department": "IT",
-        "salary": 100000
-    },
-    {
-        "id": 3,
-        "name": "Rick Astley",
-        "years_with_company": 9.0,
-        "department": "Marketing",
-        "salary": 100000
-    }
-];
+// Employee Schema
+const employeeSchema = new mongoose.Schema({
+    id: Number,
+    name: String,
+    job_title: String,
+    years_with_company: Number,
+    department: String,
+    salary: Number
+});
+
+// Employee Model
+const Employee = mongoose.model('Employee', employeeSchema);
+
+// // List of Employees (with sample data)
+// var employeesList = [
+//     {
+//         "id": 1,
+//         "name": "Bob Doe",
+//         "years_with_company": 9.5,
+//         "department": "HR",
+//         "salary": 100000
+//     },
+//     {
+//         "id": 2,
+//         "name": "Leeroy Jenkins",
+//         "years_with_company": 9.5,
+//         "department": "IT",
+//         "salary": 100000
+//     },
+//     {
+//         "id": 3,
+//         "name": "Rick Astley",
+//         "years_with_company": 9.0,
+//         "department": "Marketing",
+//         "salary": 100000
+//     }
+// ];
 
 // Routes
 
 // List all Employees
-app.get('/employees', (req, res) => {
+app.get('/employees', async (req, res) => {
+    try {
+        // Retrieve all employees from MongoDB excluding _id and __v fields
+        const employees = await Employee.find({}, '-_id -job_title -__v');
 
-    // Sort the employees by years with company in descending order
-    employeesList = employeesList.sort((a, b) => b.years_with_company - a.years_with_company);
+        // Sort the employees by years with company in descending order
+        const sortedEmployees = employees.sort((a, b) => b.years_with_company - a.years_with_company);
 
-    // Calculate Employees Totals and Averages
-    const totalEmployees = employeesList.length;
-    const totalYearsWithCompany = employeesList.reduce((sum, employee) => sum + employee.years_with_company, 0);
-    const averageYearsWithCompany = parseFloat((totalYearsWithCompany / totalEmployees).toFixed(2));
-    const averageSalary = employeesList.reduce((sum, employee) => sum + employee.salary, 0) / totalEmployees;
+        // Calculate the total number of employees, average years with company, and average salary
+        const totalEmployees = sortedEmployees.length;
+        const totalYearsWithCompany = sortedEmployees.reduce((sum, employee) => sum + employee.years_with_company, 0);
+        const averageYearsWithCompany = parseFloat((totalYearsWithCompany / totalEmployees).toFixed(2));
+        const averageSalary = sortedEmployees.reduce((sum, employee) => sum + employee.salary, 0) / totalEmployees;
 
-    // Return the list of employees
-    res.status(200).send({
-        "total": totalEmployees,
-        "average_years_with_company": averageYearsWithCompany,
-        "average_salary": averageSalary,
-        "employees": employeesList
-    });
+        // Return the employees list
+        res.status(200).send({
+            total: totalEmployees,
+            average_years_with_company: averageYearsWithCompany,
+            average_salary: averageSalary,
+            employees: sortedEmployees
+        });
+        
+    } catch (error) {
+        // Return an error if something went wrong
+        console.error('Error fetching employees:', error);
+        res.status(500).send({ message: 'Internal Server Error' });
+    }
 });
 
 
 // Retrieve individual employee details
-app.get('/employees/:id', (req, res) => {
+app.get('/employees/:id', async (req, res) => {
+    try {
+        // Find the employee by ID
+        const id = req.params.id;
+        const employee = await Employee.findOne({ id: id }, '-_id -__v');
 
-    // Check if employees list is empty
-    if (employeesList.length === 0) {
-        res.status(404).send({
-            "message": "No employees found. Please add employees to the database."
-        });
+        // Check if employee exists
+        if (!employee) {
+            return res.status(404).send({
+                message: `Employee ${id} not found `
+            });
+        }
+
+        // Return the employee details
+        res.status(200).send(employee);
+
+    } catch (error) {
+        // Return an error if something went wrong
+        console.error('Error fetching employee:', error);
+        res.status(500).send({ message: 'Internal Server Error' });
     }
-
-    // Find the employee by ID
-    const id = req.params.id;
-    const employee = employeesList.find((employee) => id == employee.id);
-
-    // Check if employee exists
-    if (!employee) {
-        res.status(404).send({
-            "message": `Employee not found ${id}`
-        });
-    }
-
-    // Return the employee details
-    res.status(200).send({
-        id: employee.id,
-        name: employee.name,
-        years_with_company: employee.years_with_company,
-        department: employee.department,
-        salary: employee.salary
-    });
 });
 
 
 // Add an Employee
-app.post('/employees', (req, res) => {
+app.post('/employees', async (req, res) => {
+    try {
+        // Read employee data from request body
+        const { name, job_title, years_with_company, department, salary } = req.body;
 
-    // Read employee data from request body
-    const id = req.body.id;
-    const name = req.body.name;
-    const years_with_company = req.body.years_with_company;
-    const department = req.body.department;
-    const salary = req.body.salary;
+        // Generate a new ID for the employee
+        const employeeCount = await Employee.countDocuments();
+        const newId = employeeCount + 1;
 
-    // Check if all required fields are provided (ID can be 0))
-    if (!((id == 0 || id) && name && years_with_company && department && salary)) {
-        res.status(404).send({
-            "message": "Invalid request: missing a required field. Please provide all required fields."
-        });
+        // Check if all required fields are provided (ID can be 0)
+        if (!(name && job_title && years_with_company && department && salary)) {
+            return res.status(400).send({
+                "message": "Invalid request: missing a required field. Please provide all required fields."
+            });
+        } else {
+            const newEmployee = await Employee.create({
+                id: newId,
+                name: name,
+                job_title: job_title,
+                years_with_company: years_with_company,
+                department: department,
+                salary: salary
+            });
+            
+            // Confirm the employee was added
+            res.status(200).send({
+                "status" : 200,
+                "message": "New employee added",
+                id: newEmployee.id
+            });
+        }    
+    } catch (error) {
+        // Return an error if something went wrong
+        console.error('Error creating employee:', error);
+        res.status(500).send({ message: 'Internal Server Error' });
     }
-
-    // Create a new employee
-    const newEmployee = {
-        id: id,
-        name: name,
-        years_with_company: years_with_company,
-        department: department,
-        salary: salary
-    };
-
-    // Add the new employee to the employees list
-    employeesList.push(newEmployee);
-
-    // Confirm the employee was added
-    res.status(200).send({
-        "status" : 200,
-        "message": "New employee added",
-        id: newEmployee.id,
-    })
 });
 
 
 // Update an Employee
-app.put('/employees/:id', (req, res) => {
+app.put('/employees/:id', async (req, res) => {
+    try {
+        // Find the employee by ID
+        const id = req.params.id;
+        const employee = await Employee.findOne({ id: id });
 
-    // Check if employees list is empty
-    if (employeesList.length === 0) {
-        res.status(404).send({
-            "message": "No employees found. Please add employees to the database."
-        });
+        // Check if employee exists
+        if (!employee) {
+            return res.status(404).send({
+                message: `Employee ${id} not found `
+            });
+        }
+
+        // Read employee data from request body
+        const { name, job_title, years_with_company, department, salary } = req.body;
+
+        // Check if all required fields are provided (ID can be 0)
+        if (!(name && job_title && years_with_company && department && salary)) {
+            return res.status(400).send({
+                "message": "Invalid request: missing a required field. Please provide all required fields."
+            });
+        } else {
+            // Update the employee
+            employee.name = name;
+            employee.job_title = job_title;
+            employee.years_with_company = years_with_company;
+            employee.department = department;
+            employee.salary = salary;
+
+            // Save the updated employee
+            await employee.save();
+
+            // Confirm the employee was updated
+            res.status(200).send({
+                "status" : 200,
+                "message": "Employee updated",
+            })
+        }
+    } catch (error) {
+        // Return an error if something went wrong
+        console.error('Error creating employee:', error);
+        res.status(500).send({ message: 'Internal Server Error' });
     }
-
-    // Find the employee by ID
-    const id = req.params.id;
-    const employee = employeesList.find((employee) => id == employee.id);
-
-    // Check if employee exists
-    if (!employee) {
-        res.status(404).send({
-            "message": `Employee not found ${id}`
-        });
-    }
-
-    // Read employee data from request body
-    const new_id = req.body.id;
-    const new_name = req.body.name;
-    const new_years_with_company = req.body.years_with_company;
-    const new_department = req.body.department;
-    const new_salary = req.body.salary;
- 
-    // Check if all required fields are provided
-    if (!(new_id && new_name && new_years_with_company && new_department && new_salary)) {
-        res.status(404).send({
-            "message": "Invalid request: missing a required field. Please provide all required fields."
-        });
-    }
-
-    // Update the employee
-    employee.id = new_id;
-    employee.name = new_name;
-    employee.years_with_company = new_years_with_company;
-    employee.department = new_department;
-    employee.salary = new_salary;
-
-    // Confirm the employee was updated
-    res.status(200).send({
-        "status" : 200,
-        "message": "Employee updated",
-    })
 });
 
 // Modify an Employee
-app.patch('/employees/:id', (req, res) => {
+app.patch('/employees/:id', async (req, res) => {
+    try {
+        // Find the employee by ID
+        const id = req.params.id;
+        const employee = await Employee.findOne({ id: id });
 
-    // Check if employees list is empty
-    if (employeesList.length === 0) {
-        res.status(404).send({
-            "message": "No employees found. Please add employees to the database."
-        });
-    }
+        // Check if employee exists
+        if (!employee) {
+            return res.status(404).send({
+                message: `Employee ${id} not found `
+            });
+        }
 
-    // Find the employee by ID
-    const id = req.params.id;
-    const employee = employeesList.find((employee) => id == employee.id);
+        // Read employee data from request body
+        const new_name = req.body.name;
+        const new_job_title = req.body.job_title;
+        const new_years_with_company = req.body.years_with_company;
+        const new_department = req.body.department;
+        const new_salary = req.body.salary;
 
-    // Check if employee exists
-    if (!employee) {
-        res.status(404).send({
-            "message": `Employee not found ${id}`
-        });
-    }
+        // Check if any required fields is provided
+        if (!(new_name || new_job_title || new_years_with_company || new_department || new_salary)) {
+            return res.status(400).send({
+                "message": `Invalid request: missing any required field. Please provide at least one field.
+                            ${new_name} ${new_job_title} ${new_years_with_company} ${new_department} ${new_salary}`
+            });
+        } else {
+            // Update the employee
+            employee.name = new_name || employee.name;
+            employee.job_title = new_job_title || employee.job_title;
+            employee.years_with_company = new_years_with_company || employee.years_with_company;
+            employee.department = new_department || employee.department;
+            employee.salary = new_salary || employee.salary;
 
-    // Read employee data from request body if provided, otherwise use the existing data
-    var mod_id = employee.id;
-    if (req.body.id) {
-        mod_id = req.body.id;
-    }
-    var mod_name = employee.name;
-    if (req.body.name) {
-        mod_name = req.body.name;
-    }
-    var mod_years_with_company = employee.years_with_company;
-    if (req.body.years_with_company) {
-        mod_years_with_company = req.body.years_with_company;
-    }
-    var mod_department = employee.department;
-    if (req.body.department) {
-        mod_department = req.body.department;
-    }
-    var mod_salary = employee.salary;
-    if (req.body.salary) {
-        mod_salary = req.body.salary;
-    }
- 
-    // Check if at least one field is provided
-    if (!(mod_id || mod_name || mod_years_with_company || mod_department || mod_salary)) {
-        res.status(404).send({
-            "message": "Invalid request: missing a required field. Please provide at least one field."
-        });
-    }
+            // Save the updated employee
+            await employee.save();
 
-    // Modify the Employee
-    employee.id = mod_id;
-    employee.name = mod_name;
-    employee.years_with_company = mod_years_with_company;
-    employee.department = mod_department;
-    employee.salary = mod_salary;
-
-    // Confirm the employee was modified
-    res.status(200).send({
-        "status" : 200,
-        "message": "Employee modified",
-    })
+            // Confirm the employee was updated
+            res.status(200).send({
+                "status" : 200,
+                "message": "Employee modified",
+            })
+        }
+    } catch (error) {
+        // Return an error if something went wrong
+        console.error('Error creating employee:', error);
+        res.status(500).send({ message: 'Internal Server Error' });
+    }
 });
 
 // Delete an Employee
-app.delete('/employees/:id', (req, res) => {
+app.delete('/employees/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
 
-    //  Check if employees list is empty
-    if (employeesList.length === 0) {
-        res.status(404).send({
-            "message": "No employees found. Please add employees to the database."
-        });
+        // Find the employee by ID and delete it
+        await Employee.findOneAndDelete({ id: id });
+
+        // Confirm the employee was deleted
+        res.status(200).send({
+            "status" : 200,
+            "message": "Employee deleted",
+        })
+
+    } catch (error) {
+        console.error('Error deleting employee:', error);
+        res.status(500).send({ message: 'Internal Server Error' });
     }
-
-    // Find the employee by ID
-    const id = req.params.id;
-    const employee = employeesList.find((employee) => id == employee.id);
-
-    // Check if employee exists
-    if (!employee) {
-        res.status(404).send({
-            "message": `Employee not found ${id}`
-        });
-    }
-
-    // Delete the employee
-    employeesList.splice(employeesList.indexOf(employee), 1);
-
-    // Confirm the employee was deleted
-    res.status(200).send({
-        "status" : 200,
-        "message": "Employee deleted",
-    })
 });
 
 // Start the server

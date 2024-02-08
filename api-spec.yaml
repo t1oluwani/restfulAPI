@@ -6,19 +6,40 @@ info:
 servers:
   - url: http://localhost:7000
 paths:
+  /docs:
+    get:
+      summary: Get Swagger UI documentation
+      responses:
+        '200':
+          description: Swagger UI page
 
   /employees:
+
     get:
-      summary: Retrieve all employees
+      summary: Get all employees
       responses:
         '200':
           description: A list of employees
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Employee'
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: Total number of employees
+                  average_years_with_company:
+                    type: number
+                    format: float
+                    description: Average years with company
+                  average_salary:
+                    type: number
+                    format: float
+                    description: Average salary
+                  employees:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Employee'
 
     post:
       summary: Add a new employee
@@ -27,41 +48,41 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Employee'
+              $ref: '#/components/schemas/NewEmployee'
       responses:
         '200':
-          description: Employee added successfully
+          description: New employee added
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Employee'
+                $ref: '#/components/schemas/ConfirmationWithId'
 
-  /employees/{id}:
+  '/employees/{id}':
+
     get:
-      summary: Retrieve an employee by ID
+      summary: Get employee by ID
       parameters:
-        - in: path
-          name: id
+        - name: id
+          in: path
           required: true
-          description: The ID of the employee to retrieve
+          description: ID of the employee to get
           schema:
             type: integer
       responses:
         '200':
-          description: Employee found
+          description: Employee details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Employee'
-        '404':
-          description: Employee not found
+                $ref: '#/components/schemas/EmployeeWithId'
+
     put:
-      summary: Update an existing employee
+      summary: Update employee by ID
       parameters:
-        - in: path
-          name: id
+        - name: id
+          in: path
           required: true
-          description: The ID of the employee to update
+          description: ID of the employee to update
           schema:
             type: integer
       requestBody:
@@ -69,23 +90,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Employee'
+              $ref: '#/components/schemas/UpdateEmployee'
       responses:
         '200':
-          description: Employee updated successfully
+          description: Employee with ID updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Employee'
-        '404':
-          description: Employee not found
+                $ref: '#/components/schemas/Confirmation'
+
     patch:
-      summary: Modify an existing employee
+      summary: Modify employee by ID
       parameters:
-        - in: path
-          name: id
+        - name: id
+          in: path
           required: true
-          description: The ID of the employee to modify
+          description: ID of the employee to modify
           schema:
             type: integer
       requestBody:
@@ -93,43 +113,158 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Employee'
+              $ref: '#/components/schemas/ModifyEmployee'
       responses:
         '200':
-          description: Employee modified successfully
+          description: Employee with ID modified
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Employee'
-        '404':
-          description: Employee not found
+                $ref: '#/components/schemas/Confirmation'
+
     delete:
-      summary: Delete an existing employee
+      summary: Delete employee by ID
       parameters:
-        - in: path
-          name: id
+        - name: id
+          in: path
           required: true
-          description: The ID of the employee to delete
+          description: ID of the employee to delete
           schema:
             type: integer
       responses:
         '200':
-          description: Employee deleted successfully
-        '404':
-          description: Employee not found
+          description: Employee deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Confirmation'
+
 components:
   schemas:
+
     Employee:
       type: object
       properties:
         id:
           type: integer
+          description: Unique identifier for the employee
         name:
+          type: string
+          description: Name of the employee
+        years_with_company:
+          type: number
+          format: float
+          description: Years with the company
+        department:
+          type: string
+          description: Department of the employee
+        salary:
+          type: number
+          format: float
+          description: Salary of the employee
+
+    EmployeeWithId:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the employee
+        name:
+          type: string
+          description: Name of the employee
+        job_title:
           type: string
         years_with_company:
           type: number
+          format: float
+          description: Years with the company
+        department:
+          type: string
+          description: Department of the employee
+        salary:
+          type: number
+          format: float
+          description: Salary of the employee
+
+    NewEmployee:
+      type: object
+      required:
+        - name
+        - job_title
+        - years_with_company
+        - department
+        - salary
+      properties:
+        name:
+          type: string
+        job_title:
+          type: string
+        years_with_company:
+          type: number
+          format: float
         department:
           type: string
         salary:
           type: number
-    
+          format: float
+
+    UpdateEmployee:
+      type: object
+      required:
+        - name
+        - job_title
+        - years_with_company
+        - department
+        - salary
+      properties:
+        name:
+          type: string
+        job_title:
+          type: string
+        years_with_company:
+          type: number
+          format: float
+        department:
+          type: string
+        salary:
+          type: number
+          format: float
+
+    ModifyEmployee:
+      type: object
+      properties:
+        name:
+          type: string
+        job_title:
+          type: string
+        years_with_company:
+          type: number
+          format: float
+        department:
+          type: string
+        salary:
+          type: number
+          format: float
+
+    ConfirmationWithId:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+        message:
+          type: string
+          description: Confirmation message
+        id:
+          type: integer
+          description: ID of the new employee
+
+    Confirmation:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+        message:
+          type: string
+          description: Confirmation message
