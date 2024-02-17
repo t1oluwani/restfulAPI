@@ -8,10 +8,10 @@ servers:
 paths:
   /docs:
     get:
-      summary: Get Swagger UI documentation
+      summary:  API documentation accessible
       responses:
         '200':
-          description: Swagger UI page
+          description: Open API page
 
   /employees:
 

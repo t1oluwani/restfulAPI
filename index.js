@@ -15,8 +15,11 @@ mongoose.connect('mongodb://localhost:27017/employee_database')
 // Load OpenAPI specification
 const swaggerDocument = YAML.load('./api-spec.yaml');
     
-// Serve Swagger UI documentation
+// API documentation accessible
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// Source of the OpenAPI docs is accessible
+app.use('/api-spec.yaml', express.static('api-spec.yaml'));
 
 // Middleware
 app.use(express.json()); // Parse JSON request bodies
@@ -50,31 +53,6 @@ employeeSchema.post('findOne', function(doc) {
 
 // Employee Model
 const Employee = mongoose.model('Employee', employeeSchema);
-
-// // List of Employees (with sample data)
-// var employeesList = [
-//     {
-//         "id": 1,
-//         "name": "Bob Doe",
-//         "years_with_company": 9.5,
-//         "department": "HR",
-//         "salary": 100000
-//     },
-//     {
-//         "id": 2,
-//         "name": "Leeroy Jenkins",
-//         "years_with_company": 9.5,
-//         "department": "IT",
-//         "salary": 100000
-//     },
-//     {
-//         "id": 3,
-//         "name": "Rick Astley",
-//         "years_with_company": 9.0,
-//         "department": "Marketing",
-//         "salary": 100000
-//     }
-// ];
 
 // Routes
 
@@ -295,6 +273,11 @@ app.delete('/employees/:id', async (req, res) => {
         console.error('Error deleting employee:', error);
         res.status(500).send({ message: 'Internal Server Error' });
     }
+});
+
+// Handle unsupported methods
+app.use((req, res, next) => {
+    res.status(405).send({ message: 'Method Not Allowed' });
 });
 
 // Start the server
