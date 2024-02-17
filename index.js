@@ -31,6 +31,23 @@ const employeeSchema = new mongoose.Schema({
     salary: Number
 });
 
+// Middleware to round salary before saving
+employeeSchema.pre('save', function(next) {
+    // Round the salary to 2 decimal places
+    this.salary = Math.round(this.salary * 100) / 100;
+    this.years_with_company = Math.round(this.years_with_company * 100) / 100;
+    next();
+});
+
+// Middleware to round salary after retrieval
+employeeSchema.post('findOne', function(doc) {
+    if (doc) {
+        // Round the salary to 2 decimal places
+        doc.salary = Math.round(doc.salary * 100) / 100;
+        doc.years_with_company = Math.round(doc.years_with_company * 100) / 100;
+    }
+});
+
 // Employee Model
 const Employee = mongoose.model('Employee', employeeSchema);
 
@@ -73,14 +90,14 @@ app.get('/employees', async (req, res) => {
         // Calculate the total number of employees, average years with company, and average salary
         const totalEmployees = sortedEmployees.length;
         const totalYearsWithCompany = sortedEmployees.reduce((sum, employee) => sum + employee.years_with_company, 0);
-        const averageYearsWithCompany = parseFloat((totalYearsWithCompany / totalEmployees).toFixed(2));
+        const averageYearsWithCompany = parseFloat(totalYearsWithCompany / totalEmployees);
         const averageSalary = sortedEmployees.reduce((sum, employee) => sum + employee.salary, 0) / totalEmployees;
 
         // Return the employees list
         res.status(200).send({
             total: totalEmployees,
-            average_years_with_company: averageYearsWithCompany,
-            average_salary: averageSalary,
+            average_years_with_company: Math.round(averageYearsWithCompany * 100) / 100,
+            average_salary: Math.round(averageSalary * 100) / 100,
             employees: sortedEmployees
         });
         
@@ -107,7 +124,14 @@ app.get('/employees/:id', async (req, res) => {
         }
 
         // Return the employee details
-        res.status(200).send(employee);
+        res.status(200).send({
+            "id": employee.id,
+            "name": employee.name,
+            "job_title": employee.job_title,
+            "department": employee.department,
+            "years_with_company": employee.years_with_company,
+            "salary": employee.salary
+        });
 
     } catch (error) {
         // Return an error if something went wrong
@@ -225,18 +249,17 @@ app.patch('/employees/:id', async (req, res) => {
         const new_salary = req.body.salary;
 
         // Check if any required fields is provided
-        if (!(new_name || new_job_title || new_years_with_company || new_department || new_salary)) {
+        if ((new_name == undefined && new_job_title == undefined && new_years_with_company == undefined && new_department == undefined && new_salary == undefined)) {
             return res.status(404).send({
-                "message": `Invalid request: missing any required field. Please provide at least one field.
-                            ${new_name} ${new_job_title} ${new_years_with_company} ${new_department} ${new_salary}`
+                "message": "Invalid request: missing required field(s). Please provide at least one field."
             });
         } else {
             // Update the employee
-            employee.name = new_name || employee.name;
-            employee.job_title = new_job_title || employee.job_title;
-            employee.years_with_company = new_years_with_company || employee.years_with_company;
-            employee.department = new_department || employee.department;
-            employee.salary = new_salary || employee.salary;
+            employee.name = (new_name == undefined) ? employee.name : new_name;
+            employee.job_title = (new_job_title == undefined) ? employee.job_title : new_job_title;
+            employee.years_with_company = (new_years_with_company == undefined) ? employee.years_with_company : new_years_with_company;
+            employee.department = (new_department == undefined) ? employee.department : new_department;
+            employee.salary = (new_salary == undefined) ? employee.salary : new_salary;
 
             // Save the updated employee
             await employee.save();
