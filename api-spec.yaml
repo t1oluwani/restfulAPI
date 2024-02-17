@@ -174,13 +174,13 @@ components:
           description: Name of the employee
         job_title:
           type: string
+        department:
+          type: string
+          description: Department of the employee
         years_with_company:
           type: number
           format: float
           description: Years with the company
-        department:
-          type: string
-          description: Department of the employee
         salary:
           type: number
           format: float
