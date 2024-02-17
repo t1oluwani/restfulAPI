@@ -74,7 +74,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmployeeWithId'
+                $ref: '#/components/schemas/EmployeeById'
 
     put:
       summary: Update employee by ID
@@ -163,7 +163,7 @@ components:
           format: float
           description: Salary of the employee
 
-    EmployeeWithId:
+    EmployeeById:
       type: object
       properties:
         id:
