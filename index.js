@@ -5,7 +5,7 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs'); // This is to load OpenAPI YAML file
 
 const app = express();
-const PORT = 7000;
+const PORT = 80;
 
 // Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/employee_database')
