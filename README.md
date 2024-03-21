@@ -67,8 +67,8 @@ The API handles unsupported HTTP methods with a 405 Method Not Allowed response.
 This project is licensed under the Apache License - see the [License](LICENSE) file for details.
 
 ## References
-RESTful API: https://www.youtube.com/watch?v=-MTSQjw5DrM&ab_channel=Fireship
-Cybera Instace: https://www.youtube.com/watch?v=jv4D8I_AwTQ&ab_channel=UniversityofAlberta%3ACMPUT401
-Node.js Deployment: https://www.youtube.com/watch?v=oykl1Ih9pMg&ab_channel=TraversyMedia
+- RESTful API: https://www.youtube.com/watch?v=-MTSQjw5DrM&ab_channel=Fireship
+- Cybera Instace: https://www.youtube.com/watch?v=jv4D8I_AwTQ&ab_channel=UniversityofAlberta%3ACMPUT401
+- Node.js Deployment: https://www.youtube.com/watch?v=oykl1Ih9pMg&ab_channel=TraversyMedia
 
 
