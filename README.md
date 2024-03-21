@@ -13,7 +13,8 @@ The API will be accessible at [http://[2605:fd00:4:1001:f816:3eff:fe13:b269]/emp
 
 ## API Documentation
 
-The API documentation is available at [http://[2605:fd00:4:1001:f816:3eff:fe13:b269]/docs](http://[2605:fd00:4:1001:f816:3eff:fe13:b269]/docs),    where you can see the endpoints and their descriptions.
+The API documentation is available at [http://[2605:fd00:4:1001:f816:3eff:fe13:b269]/docs](http://[2605:fd00:4:1001:f816:3eff:fe13:b269]/docs),  
+where you can see the endpoints and their descriptions.
 
 ## Endpoints
 
