@@ -1,5 +1,5 @@
 {
-  "name": "deployedAPI",
+  "name": "restfulAPI",
   "version": "1.0.0",
   "description": "This is a simple API that is deployed on a server.",
   "main": "index.js",
