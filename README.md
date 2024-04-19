@@ -1,6 +1,6 @@
 # Employee Management API
 
-This is a simple REST API built using Node.js, Express.js for managing employee data. It allows you to perform CRUD (Create, Read, Update, Delete) operations on employee records stored in a MongoDB database. Additionally, it provides API documentation using the OpenAPI specification.
+This is a simple deployed REST API built using Node.js, Express.js for managing employee data. It allows you to perform CRUD (Create, Read, Update, Delete) operations on employee records stored in a MongoDB database. Additionally, it provides API documentation using the OpenAPI specification.
 
 ## Deployment
 
