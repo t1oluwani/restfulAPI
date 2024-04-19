@@ -26,7 +26,7 @@ where you can see the endpoints and their descriptions.
 
 ### Retrieve individual Employee details
 
-- **URL**: `/employees/:id`
+- **URL**: `/employees/[id]`
 - **Method**: GET
 - **Description**: Retrieves details of a specific employee by ID.
 
@@ -38,19 +38,19 @@ where you can see the endpoints and their descriptions.
 
 ### Update an Employee
 
-- **URL**: `/employees/:id`
+- **URL**: `/employees/[id]`
 - **Method**: PUT
 - **Description**: Updates details of a specific employee by ID.
 
 ### Modify an Employee
 
-- **URL**: `/employees/:id`
+- **URL**: `/employees/[id]`
 - **Method**: PATCH
 - **Description**: Modifies details of a specific employee by ID.
 
 ### Delete an Employee
 
-- **URL**: `/employees/:id`
+- **URL**: `/employees/[id]`
 - **Method**: DELETE
 - **Description**: Deletes a specific employee by ID.
 
