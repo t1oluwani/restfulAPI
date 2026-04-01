@@ -2,6 +2,15 @@
 
 This is a simple deployed REST API built using Node.js, Express.js for managing employee data. It allows you to perform CRUD (Create, Read, Update, Delete) operations on employee records stored in a MongoDB database. Additionally, it provides API documentation using the OpenAPI specification.
 
+## Tech Stack
+
+- **Backend:** Node.js, Express.js  
+- **Database:** MongoDB  
+- **API Documentation:** OpenAPI (Swagger)  
+- **Runtime Environment:** Ubuntu (Cybera Instance)  
+- **Deployment:** Hosted on a Cybera VM with IPv6 networking  
+- **Architecture:** RESTful API
+- 
 ## Deployment
 
 This API was deployed using a Cybera instance running Ubuntu.   
