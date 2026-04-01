@@ -10,7 +10,7 @@ This is a simple deployed REST API built using Node.js, Express.js for managing 
 - **Runtime Environment:** Ubuntu (Cybera Instance)  
 - **Deployment:** Hosted on a Cybera VM with IPv6 networking  
 - **Architecture:** RESTful API
-- 
+  
 ## Deployment
 
 This API was deployed using a Cybera instance running Ubuntu.   
